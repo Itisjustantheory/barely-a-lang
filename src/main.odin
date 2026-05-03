@@ -30,7 +30,7 @@ stack_pop :: proc(stack: ^Stack) -> (Maybe(i64), bool) {
 // though, the function in question returns them in the correct order of their appendment
 stack_attempt_pop_twice :: proc(stack: ^Stack) -> (Maybe(i64), Maybe(i64), bool) {
 
-	if len(stack) <= 2 do return nil, nil, false
+	if len(stack) < 2 do return nil, nil, false
 
 	b, _ := stack_pop(stack)
 	a, _ := stack_pop(stack)
@@ -67,6 +67,7 @@ main :: proc() {
 	lines, _ := strings.split_lines(source)
 
 	stack: Stack = {}
+	jump_to_label: string
 
 
 	for line, line_number in lines {
@@ -82,7 +83,21 @@ main :: proc() {
 			"<none given>" if len(instruction) == 0 else instruction,
 		)
 
-		if (opcode == "READ") {
+		if jump_to_label != "" {
+			if (strings.has_suffix(opcode, ":")) {
+
+				label, ok := strings.substring(opcode, 0, len(opcode) - 1)
+
+				if !ok || label == "" {
+					fmt.printf("invalid label at line number %u", line_number)
+					os.exit(-1)
+				}
+
+				if label == jump_to_label do jump_to_label = ""
+			}
+		}
+
+		if opcode == "READ" {
 			buffer: [BUFFER_SIZE]byte
 			byte_read, err := os.read(os.stdin, buffer[:])
 
@@ -104,7 +119,7 @@ main :: proc() {
 
 			stack_push(&stack, number)
 
-		} else if (opcode == "SUB") {
+		} else if opcode == "SUB" {
 
 			a, b, ok := stack_attempt_pop_twice(&stack)
 
@@ -115,10 +130,10 @@ main :: proc() {
 
 
 			c := a.(i64) - b.(i64)
-			fmt.println("result: %d", c)
+			fmt.printf("result: %d\n", c)
 			stack_push(&stack, c)
 
-		} else if (opcode == "JUMP.EQ.0") {
+		} else if opcode == "JUMP.EQ.0" {
 
 			a, ok := stack_pop(&stack)
 
@@ -133,21 +148,30 @@ main :: proc() {
 				if len(instruction) == 0 {
 					fmt.println(
 						"label not found in JUMP instruction at line number %u",
-						line_number,
+						line_number + 1,
 					)
 					os.exit(-1)
 				}
 
-				label := instruction
+				jump_to_label = instruction
 
 			} else {
+				fmt.println("JUMP DID NOT SUCCEED\n")
 				continue
 			}
 
+		} else if opcode == "PRINT" {
 
-		}
+			if len(instruction) == 0 {
+				fmt.println(
+					"expected message for PRINT instruction at line number %u",
+					line_number + 1,
+				)
+				os.exit(-1)
+			}
 
-
+			fmt.printfln("message: %s\n", instruction)
+		} else if opcode == "HALT" do return
 	}
 
 }
