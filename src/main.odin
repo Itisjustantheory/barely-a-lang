@@ -2,6 +2,7 @@ package main
 
 import "core:fmt"
 import "core:os"
+import "core:strings"
 
 main :: proc() {
 	file, file_error := os.open("../barely_src/test01.barely")
@@ -20,7 +21,15 @@ main :: proc() {
 		os.exit(-1)
 	}
 
-	fmt.println(string(source_code))
+	source := string(source_code)
 
+	fmt.println(source)
+
+
+	lines, _ := strings.split_lines(source)
+
+	for line in lines {
+
+	}
 
 }
