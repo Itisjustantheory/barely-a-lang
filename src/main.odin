@@ -20,7 +20,7 @@ main :: proc() {
 		os.exit(-1)
 	}
 
-	fmt.println(source_code)
+	fmt.println(string(source_code))
 
 
 }
