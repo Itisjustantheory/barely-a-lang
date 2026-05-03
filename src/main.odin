@@ -23,12 +23,28 @@ main :: proc() {
 
 	source := string(source_code)
 
+
 	fmt.println(source)
+
+	fmt.println("------------------------")
 
 
 	lines, _ := strings.split_lines(source)
 
+
+	// need to remove remaining "" empty strings
 	for line in lines {
+
+		if len(line) == 0 do continue
+
+		opcode, _, instruction := strings.partition(line, " ")
+
+		fmt.printf(
+			"opcode: %s\ninstructions: %s\n\n",
+			opcode,
+			"<none given>" if len(instruction) == 0 else instruction,
+		)
+
 
 	}
 
