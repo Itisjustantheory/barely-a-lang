@@ -40,7 +40,16 @@ stack_attempt_pop_twice :: proc(stack: ^Stack) -> (Maybe(i64), Maybe(i64), bool)
 }
 
 main :: proc() {
-	file, file_error := os.open("../barely_src/test01.barely")
+
+	if len(os.args) == 1 {
+		fmt.println("Usage: ./bac <barely-source>")
+		os.exit(-1)
+	}
+
+
+	file_handle := os.args[1]
+
+	file, file_error := os.open(file_handle)
 
 	if file_error != os.ERROR_NONE {
 		fmt.println("cannot find barely-lang src(s) ")
@@ -97,7 +106,19 @@ main :: proc() {
 			}
 		}
 
-		if opcode == "READ" {
+		if opcode == "PUSH" {
+			number, ok := strconv.parse_i64(instruction)
+
+			if !ok {
+				fmt.printf("error whilst parsing read data (must be a valid integer)")
+				os.exit(-1)
+			}
+
+			fmt.println(number)
+
+			stack_push(&stack, number)
+
+		} else if opcode == "READ" {
 			buffer: [BUFFER_SIZE]byte
 			byte_read, err := os.read(os.stdin, buffer[:])
 
@@ -156,7 +177,7 @@ main :: proc() {
 				jump_to_label = instruction
 
 			} else {
-				fmt.println("JUMP DID NOT SUCCEED\n")
+				fmt.println("<debug>JUMP DID NOT SUCCEED</debug>\n")
 				continue
 			}
 
